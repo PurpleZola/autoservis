@@ -41,12 +41,13 @@ public class KorisnikController {
 
     @PutMapping("/{id}")
     public ResponseEntity<KorisnikDTO> update(@PathVariable Long id, @RequestBody KorisnikDTO dto) {
-        if (korisnikService.getById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Korisnik korisnik = korisnikService.fromDTO(dto);
-        korisnik.setId(id);
-        return ResponseEntity.ok(korisnikService.toDTO(korisnikService.save(korisnik)));
+        return korisnikService.getById(id)
+                .map(korisnik -> {
+                    korisnik.setEmail(dto.getEmail());
+                    korisnik.setRola(dto.getRola());
+                    return ResponseEntity.ok(korisnikService.toDTO(korisnikService.save(korisnik)));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")

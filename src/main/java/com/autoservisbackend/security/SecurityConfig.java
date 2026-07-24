@@ -20,6 +20,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -37,7 +40,15 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(GET, "/api/vozila/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(GET, "/api/servisni-nalozi/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(GET, "/api/racuni/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(GET, "/api/korisnici/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(GET, "/api/klijenti/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(GET, "/api/serviseri/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(POST, "/api/klijenti").hasAnyRole("USER", "ADMIN")
+                        .anyRequest().hasRole("ADMIN"))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -58,7 +69,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         config.setExposedHeaders(List.of("Authorization"));

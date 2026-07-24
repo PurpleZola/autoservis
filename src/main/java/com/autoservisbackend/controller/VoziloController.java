@@ -4,10 +4,12 @@ import com.autoservisbackend.dto.VoziloDTO;
 import com.autoservisbackend.entity.Vozilo;
 import com.autoservisbackend.service.VoziloService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -56,5 +58,11 @@ public class VoziloController {
         }
         voziloService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        return ResponseEntity.status(409)
+                .body(Map.of("greska", "Vozilo sa istom registracijom ili brojem šasije već postoji."));
     }
 }

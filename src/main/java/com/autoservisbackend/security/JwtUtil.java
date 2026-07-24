@@ -21,13 +21,18 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    public String generateToken(String email) {
+    public String generateToken(String email, String rola) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("rola", rola)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String extractRola(String token) {
+        return extractClaims(token).get("rola", String.class);
     }
 
     public String extractEmail(String token) {

@@ -35,8 +35,11 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("greska", "Pogrešan email ili lozinka"));
         }
 
-        String token = jwtUtil.generateToken(request.getEmail());
-        return ResponseEntity.ok(Map.of("token", token));
+        Korisnik korisnik = korisnikRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BadCredentialsException("Korisnik nije pronađen"));
+
+        String token = jwtUtil.generateToken(korisnik.getEmail(), korisnik.getRola());
+        return ResponseEntity.ok(Map.of("token", token, "rola", korisnik.getRola()));
     }
 
     @PostMapping("/register")
@@ -48,10 +51,10 @@ public class AuthController {
         Korisnik korisnik = new Korisnik();
         korisnik.setEmail(request.getEmail());
         korisnik.setLozinka(passwordEncoder.encode(request.getLozinka()));
-        korisnik.setRola("USER");
+        korisnik.setRola("ADMIN".equals(request.getRola()) ? "ADMIN" : "USER");
         korisnikRepository.save(korisnik);
 
-        String token = jwtUtil.generateToken(request.getEmail());
-        return ResponseEntity.status(201).body(Map.of("token", token));
+        String token = jwtUtil.generateToken(korisnik.getEmail(), korisnik.getRola());
+        return ResponseEntity.status(201).body(Map.of("token", token, "rola", korisnik.getRola(), "id", korisnik.getId()));
     }
 }
